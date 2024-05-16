@@ -1,0 +1,275 @@
+import SwiftUI
+
+// Define a structure to represent an Animal
+struct Animal: Hashable {
+    var commonName: String
+    var latinName: String
+    var family: String
+    var biomes: String
+    var temperatureRange: String
+    var baskingSpot: String
+    var humidity: String
+    var adultWeightMale: String
+    var adultWeightFemale: String
+    var averageLengthRangeMale: String
+    var averageLengthRangeFemale: String
+    var enclosureSizeMale: String
+    var enclosureSizeFemale: String
+    var averageFeedingFrequency: String
+    
+    // Conformance to Hashable
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(commonName)
+    }
+    
+    static func ==(lhs: Animal, rhs: Animal) -> Bool {
+        return lhs.commonName == rhs.commonName
+    }
+}
+
+// Static list of reptiles and amphibians
+let reptilesAndAmphibians: [String: [Animal]] = [
+    "Lizards": [],
+    "Amphibians": [
+        Animal(commonName: "Green Tree Frog", latinName: "", family: "", biomes: "", temperatureRange: "", baskingSpot: "", humidity: "", adultWeightMale: "", adultWeightFemale: "", averageLengthRangeMale: "", averageLengthRangeFemale: "", enclosureSizeMale: "", enclosureSizeFemale: "", averageFeedingFrequency: ""),
+        Animal(commonName: "Pacman Frog", latinName: "", family: "", biomes: "", temperatureRange: "", baskingSpot: "", humidity: "", adultWeightMale: "", adultWeightFemale: "", averageLengthRangeMale: "", averageLengthRangeFemale: "", enclosureSizeMale: "", enclosureSizeFemale: "", averageFeedingFrequency: ""),
+        Animal(commonName: "Dart Frog", latinName: "", family: "", biomes: "", temperatureRange: "", baskingSpot: "", humidity: "", adultWeightMale: "", adultWeightFemale: "", averageLengthRangeMale: "", averageLengthRangeFemale: "", enclosureSizeMale: "", enclosureSizeFemale: "", averageFeedingFrequency: ""),
+    ],
+    "Snakes": [
+        Animal(commonName: "Amazon Tree Boa", latinName: "Corallus hortulanus", family: "Boidae", biomes: "Tropical Rainforest", temperatureRange: "75-85°F (24-29°C)", baskingSpot: "85-90°F (29-32°C)", humidity: "80-100%", adultWeightMale: "2000-3000", adultWeightFemale: "1500-2500", averageLengthRangeMale: "60-84 in / 152.4-213.4 cm", averageLengthRangeFemale: "48-72 in / 121.9-182.9 cm", enclosureSizeMale: "120 gallons / 454 liters", enclosureSizeFemale: "120 gallons / 454 liters", averageFeedingFrequency: "0.5"),
+        Animal(commonName: "Angolan Python", latinName: "Python anchietae", family: "Pythonidae", biomes: "Tropical Rainforest", temperatureRange: "75-85°F (24-29°C)", baskingSpot: "85-90°F (29-32°C)", humidity: "50-60%", adultWeightMale: "4000-5000", adultWeightFemale: "3000-4000", averageLengthRangeMale: "60-84 in / 152.4-213.4 cm", averageLengthRangeFemale: "48-72 in / 121.9-182.9 cm", enclosureSizeMale: "120 gallons / 454 liters", enclosureSizeFemale: "120 gallons / 454 liters", averageFeedingFrequency: "0.5"),
+    ]
+]
+
+// Define a structure to represent a tracking entry
+struct TrackingEntry: Codable, Identifiable {
+    var id = UUID()
+    var type: String
+    var value: String
+    var successfulEggs: String?
+    var slugs: String?
+}
+
+// Main entry point of the app
+@main
+struct ReptileTrackingApp: App {
+    var body: some Scene {
+        WindowGroup {
+            MainView(categories: ["Lizards", "Amphibians", "Snakes"], reptilesAndAmphibians: reptilesAndAmphibians)
+        }
+    }
+}
+
+// Main view containing tabs
+struct MainView: View {
+    var categories: [String]
+    var reptilesAndAmphibians: [String: [Animal]]
+    
+    var body: some View {
+        VStack {
+            Text("Vulcan Care")
+                .font(.custom("Old English Text MT", size: 30))
+                .foregroundColor(Color.green)
+                .padding()
+            
+            TabView {
+                CareView(categories: categories, reptilesAndAmphibians: reptilesAndAmphibians)
+                    .tabItem {
+                        Label("Care", systemImage: "star")
+                    }
+                TrackingTab(reptilesAndAmphibians: reptilesAndAmphibians)
+                    .tabItem {
+                        Label("Tracking", systemImage: "chart.bar.xaxis")
+                    }
+            }
+        }
+        .accentColor(Color.white)
+        .background(Color.black)
+    }
+}
+
+// View for displaying care details
+struct CareView: View {
+    var categories: [String]
+    var reptilesAndAmphibians: [String: [Animal]]
+    
+    @State private var selectedCategory = ""
+    @State private var selectedAnimal: Animal?
+    
+    var body: some View {
+        VStack {
+            Picker("Select Category", selection: $selectedCategory) {
+                ForEach(categories, id: \.self) { category in
+                    Text(category)
+                }
+            }
+            .pickerStyle(MenuPickerStyle())
+            .foregroundColor(Color.white)
+            .padding()
+            
+            if let animalsInCategory = reptilesAndAmphibians[selectedCategory] {
+                Picker("Select Animal", selection: $selectedAnimal) {
+                    ForEach(animalsInCategory, id: \.self) { animal in
+                        Text(animal.commonName)
+                    }
+                }
+                .pickerStyle(MenuPickerStyle())
+                .foregroundColor(Color.white)
+                .padding()
+            }
+            
+            // Display care details here based on the selected animal
+            if let selectedAnimal = selectedAnimal {
+                CareDetailView(animal: selectedAnimal)
+                    .padding()
+            } else {
+                Text("Select an animal to view care details.")
+                    .foregroundColor(Color.white)
+                    .padding()
+            }
+        }
+    }
+}
+
+// View for displaying care details of a selected animal
+struct CareDetailView: View {
+    var animal: Animal
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text("Common Name: \(animal.commonName)")
+            Text("Latin Name: \(animal.latinName)")
+            Text("Family: \(animal.family)")
+            Text("Biomes: \(animal.biomes)")
+            Text("Temperature Range: \(animal.temperatureRange)")
+            Text("Basking Spot: \(animal.baskingSpot)")
+            Text("Humidity: \(animal.humidity)")
+            Text("Adult Weight (Males): \(animal.adultWeightMale)")
+            Text("Adult Weight (Females): \(animal.adultWeightFemale)")
+            Text("Average Length Range (Male): \(animal.averageLengthRangeMale)")
+            Text("Average Length Range (Female): \(animal.averageLengthRangeFemale)")
+            Text("Enclosure Size (Male): \(animal.enclosureSizeMale)")
+            Text("Enclosure Size (Female): \(animal.enclosureSizeFemale)")
+            Text("Average Feeding Frequency: \(animal.averageFeedingFrequency)")
+        }
+        .foregroundColor(Color.white)
+        .padding()
+    }
+}
+
+// Tracking tab view
+struct TrackingTab: View {
+    // Tracking data
+    @State private var trackingData: [TrackingEntry] = []
+    // Input fields
+    @State private var newEntryType = ""
+    @State private var newValue = ""
+    @State private var clutchSuccessfulEggs = ""
+    @State private var clutchSlugs = ""
+    // Selected animal
+    @State private var selectedAnimal: Animal?
+    // Dropdown options for saved animals
+    private var animalDropdownOptions: [String] {
+        ["Add New Animal"] + Array(reptilesAndAmphibians.keys)
+    }
+    // Reference to reptiles and amphibians dictionary
+    var reptilesAndAmphibians: [String: [Animal]]
+    
+    var body: some View {
+        VStack {
+            // Show dropdown menu for saved animals
+            Picker("Select Animal", selection: $selectedAnimal) {
+                ForEach(animalDropdownOptions, id: \.self) { option in
+                    Text(option)
+                }
+            }
+            .pickerStyle(MenuPickerStyle())
+            .foregroundColor(Color.white)
+            .padding()
+            
+            // Show tracking options only if an animal is selected
+            if let selectedAnimal = selectedAnimal {
+                // Input fields for new tracking entry
+                Picker("Type", selection: $newEntryType) {
+                    Text("Select Type").tag("")
+                    Text("Weight").tag("Weight")
+                    Text("Length").tag("Length")
+                    Text("Feeding").tag("Feeding")
+                    Text("Shedding").tag("Shedding")
+                    Text("Clutch Details").tag("ClutchDetails")
+                }
+                .pickerStyle(MenuPickerStyle())
+                .foregroundColor(Color.white)
+                .padding()
+                
+                if newEntryType == "Feeding" {
+                    TextField("Enter Value", text: $newValue)
+                        .padding()
+                } else if newEntryType == "Weight" {
+                    TextField("Enter Value", text: $newValue)
+                        .padding()
+                } else if newEntryType == "Length" {
+                    TextField("Enter Value", text: $newValue)
+                        .padding()
+                } else if newEntryType == "Shedding" {
+                    TextField("Enter Value", text: $newValue)
+                        .padding()
+                } else if newEntryType == "ClutchDetails" {
+                    HStack {
+                        TextField("Successful Eggs", text: $clutchSuccessfulEggs)
+                            .padding(.vertical)
+                        TextField("Slugs", text: $clutchSlugs)
+                            .padding(.vertical)
+                    }
+                    .padding(.horizontal)
+                }
+                
+                // Button to add tracking entry
+                Button("Add Tracking Entry") {
+                    addTrackingEntry()
+                }
+                .foregroundColor(Color.white)
+                .padding()
+            } else {
+                Text("Select an animal to track.")
+                    .foregroundColor(Color.white)
+                    .padding()
+            }
+            
+            // Show tracking data
+            if !trackingData.isEmpty {
+                List(trackingData) { entry in
+                    Text("\(entry.type): \(entry.value)")
+                }
+            } else {
+                Text("No tracking data available.")
+                    .foregroundColor(Color.white)
+                    .padding()
+            }
+        }
+        .foregroundColor(Color.white)
+        .padding()
+    }
+    
+    // Function to add a new tracking entry
+    func addTrackingEntry() {
+        // Create the tracking entry
+        let trackingEntry = TrackingEntry(type: newEntryType, value: newValue, successfulEggs: clutchSuccessfulEggs, slugs: clutchSlugs)
+        
+        // Store the tracking entry
+        trackingData.append(trackingEntry)
+        
+        // Clear input fields
+        newEntryType = ""
+        newValue = ""
+        clutchSuccessfulEggs = ""
+        clutchSlugs = ""
+    }
+}
+
+// Preview
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        MainView(categories: ["Lizards", "Amphibians", "Snakes"], reptilesAndAmphibians: reptilesAndAmphibians)
+    }
+}
